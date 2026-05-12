@@ -5,7 +5,7 @@ OUT.mkdir(parents=True, exist_ok=True)
 
 for i in range(1, 11):
     (OUT / f"synthetic_{i}.txt").write_text(
-        f"Synthetic intelligence report {i}. Entity relationships and timeline references for evaluation benchmark use.\n",
+        f"Synthetic operations note {i}. Entity relationships and timeline references for evaluation benchmark use.\n",
         encoding="utf-8",
     )
 
