@@ -1,0 +1,17 @@
+[
+  {
+    "question": "What safeguards are required for traceable AI outputs?",
+    "expected_status": "grounded",
+    "expected_terms": ["citation", "source", "lineage", "audit"]
+  },
+  {
+    "question": "What should be logged for auditability?",
+    "expected_status": "grounded",
+    "expected_terms": ["log", "operations", "auditability"]
+  },
+  {
+    "question": "How many planets are in the solar system?",
+    "expected_status": "out_of_scope",
+    "expected_terms": []
+  }
+]

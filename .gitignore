@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.env
+.venv/
+venv/
+*.log
+artifacts/
+cache/
+outputs/
+chroma_db/
+faiss_index/
+.streamlit/
+.gradio/

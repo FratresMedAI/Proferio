@@ -1,0 +1,16 @@
+jupyter
+ipykernel
+pydantic>=2.7
+numpy
+pandas
+matplotlib
+sentence-transformers
+transformers
+accelerate
+rank-bm25
+gradio
+pypdf
+beautifulsoup4
+requests
+python-dotenv
+psutil

@@ -1,0 +1,3 @@
+The Threat Screening Center supports national security threat screening across partner agencies.
+AI-enabled tooling can reduce manual triage time by indexing SOPs, directives, and federated data sources with citation-ready outputs.
+Operational constraints include auditability, source attribution, explainability, and strict governance alignment.
