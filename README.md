@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/proferio-banner.png" alt="Proferio — RAG Agent // Context Is King" width="100%" />
+</p>
+
 # Proferio
 
 > Local-first RAG + controllable agents — grounded, auditable, runnable on consumer hardware.
