@@ -4,6 +4,8 @@
 
 # Proferio
 
+> **Defense Track** — synthetic knowledge-grounding for SOPs, sensor reports, and mission KB. See [`docs/DEFENSE_TRACK.md`](docs/DEFENSE_TRACK.md). General starter kit lives on [`main`](https://github.com/FratresMedAI/Proferio/tree/main).
+
 > Local-first RAG + controllable agents — grounded, auditable, runnable on consumer hardware.
 
 [![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)](#quick-start)
@@ -145,6 +147,7 @@ This executes a small labeled set and reports hit rate by status and basic answe
 - `notebooks/03_reranker_finetuning.ipynb`
 - `notebooks/04_multimodal_extension.ipynb`
 - `notebooks/05_hardware_benchmarks.ipynb`
+- `notebooks/06_defense_grounded_retrieval.ipynb` (defense branch)
 
 ---
 
@@ -159,11 +162,22 @@ This executes a small labeled set and reports hit rate by status and basic answe
 
 ---
 
-## Defense Track
+## Defense Track (this branch)
 
-For defense-adjacent grounded retrieval (synthetic SOPs, sensor report KB, audit logs), see branch [`defense`](https://github.com/FratresMedAI/Proferio/tree/defense) and [`docs/DEFENSE_TRACK.md`](docs/DEFENSE_TRACK.md).
+This branch adds synthetic defense-adjacent corpora, audit logging, and a dedicated golden eval set.
 
-This is a **knowledge-grounding layer**, not hypersonics/kinetic physics simulation.
+```bash
+python scripts/evaluate_golden.py \
+  --backend fallback \
+  --corpus sample_data/defense/docs \
+  --eval-set sample_data/defense/golden_eval.json \
+  --no-persist-index \
+  --min-status-accuracy 0.8
+```
+
+Full scope and acceptance criteria: [`docs/DEFENSE_TRACK.md`](docs/DEFENSE_TRACK.md).
+
+The general-purpose starter remains on [`main`](https://github.com/FratresMedAI/Proferio/tree/main).
 
 ---
 

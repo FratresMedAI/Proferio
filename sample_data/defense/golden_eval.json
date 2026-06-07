@@ -1,0 +1,27 @@
+[
+  {
+    "question": "What ROE gate applies before kinetic engagement?",
+    "expected_status": "grounded",
+    "expected_terms": ["ROE", "Gate", "kinetic", "approval"]
+  },
+  {
+    "question": "What must be logged for auditability in counter-UAS operations?",
+    "expected_status": "grounded",
+    "expected_terms": ["log", "auditability", "source"]
+  },
+  {
+    "question": "What is the source ID in the synthetic sensor report?",
+    "expected_status": "grounded",
+    "expected_terms": ["SYN-TRK", "source"]
+  },
+  {
+    "question": "What does ROE Gate A authorize?",
+    "expected_status": "grounded",
+    "expected_terms": ["non-kinetic", "Gate"]
+  },
+  {
+    "question": "How many planets are in the solar system?",
+    "expected_status": "out_of_scope",
+    "expected_terms": []
+  }
+]
