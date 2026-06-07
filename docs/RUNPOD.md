@@ -1,12 +1,28 @@
-# RunPod Setup — Proferio Tier B
+# RunPod Runtime (Primary for Tier B)
 
-RunPod is the **primary runtime** for full LLM inference when local hardware is insufficient.
+Proferio full inference, notebooks, Gradio, and real-LLM benchmarks run on RunPod. Laptop hardware is insufficient for the complete stack.
 
 ## Pod requirements
 
 - **Recommended**: GPU pod (e.g. 1× RTX 3090) or high-RAM CPU pod (32+ vCPU, 64+ GB RAM)
-- **Disk**: 20 GB container disk is tight — attach a **Network Volume** at `/workspace/models` and set `OLLAMA_MODELS=/workspace/models`
-- **Ports**: Jupyter `:8888` (often pre-exposed); add `:7860` for Gradio in pod HTTP settings
+- **Container disk**: 20 GB (tight constraint — models + pip cache can exceed this)
+- **Jupyter Lab**: exposed on port **8888** (RunPod HTTP proxy)
+- **Gradio**: port **7860** — add in pod HTTP settings if not auto-exposed
+
+**Never commit pod IDs, SSH keys, or proxy URLs to the repository.**
+
+## Recommended setup
+
+1. Attach a **Network Volume** (~$7/mo) and mount it at `/workspace/models`.
+2. Run bootstrap with the network-volume flag:
+
+```bash
+bash scripts/runpod_bootstrap.sh --network-volume
+```
+
+This allows `llama3.1:8b`. Without the flag (or without a mounted volume), the script defaults to `llama3.2:3b` (~2 GB) to protect the 20 GB container disk.
+
+The script also auto-detects `/workspace/models` if the volume is already mounted.
 
 ## One-shot bootstrap
 
@@ -19,21 +35,34 @@ cd Proferio
 bash scripts/runpod_bootstrap.sh
 ```
 
-Environment overrides:
+With Network Volume:
 
 ```bash
-export OLLAMA_MODEL=llama3.1:8b   # if disk allows; default is llama3.2:3b
-export WORKSPACE=/workspace
-bash scripts/runpod_bootstrap.sh
+bash scripts/runpod_bootstrap.sh --network-volume
 ```
 
 The bootstrap script:
 
-1. Clones or updates the repo
-2. Installs Python dependencies
-3. Installs and starts Ollama
+1. Clones or updates the repo on `main`
+2. Installs Python dependencies (`requirements.txt`)
+3. Installs and starts Ollama (restarts daemon idempotently)
 4. Pulls the configured model
-5. Runs Tier B smoke + golden eval
+5. Runs Tier B smoke + golden eval (**strict exit codes** — any failure aborts)
+
+## Disk mitigation (pick one)
+
+| Option | Notes |
+|---|---|
+| Network Volume at `/workspace/models` | Preferred — set `OLLAMA_MODELS=/workspace/models` |
+| Default `llama3.2:3b` | Script default without volume |
+| `pip cache purge` | Run after install (bootstrap does this) |
+
+## Index persistence on pod restart
+
+- `persist_index=True` (default) writes vectors to `artifacts/index` (gitignored)
+- Bootstrap uses `--no-persist-index` for faster, deterministic Tier B runs
+- On pod restart, the index rebuilds automatically from corpus — no manual step unless using a custom corpus path
+- **Models** are lost on restart unless stored on a Network Volume via `OLLAMA_MODELS`
 
 ## After bootstrap
 
@@ -56,17 +85,27 @@ import sys
 sys.path.append('/workspace/Proferio/src')
 ```
 
-## Disk tips
+## Verification commands (Tier B)
 
-| Issue | Fix |
-|---|---|
-| Out of disk during `pip install` | `pip cache purge` after install |
-| Model pull fails | Use `OLLAMA_MODEL=llama3.2:3b` or attach Network Volume |
-| Pod restart loses models | Persist models on Network Volume via `OLLAMA_MODELS` |
+```bash
+curl -s localhost:11434/api/tags
+python scripts/smoke_test.py --backend ollama --model-name llama3.2:3b --no-persist-index
+python scripts/evaluate_golden.py --backend ollama --model-name llama3.2:3b --no-persist-index
+python scripts/launch_gradio.py --backend ollama --model-name llama3.2:3b
+```
 
-## Security
+Pass criteria: see [`docs/ACCEPTANCE.md`](ACCEPTANCE.md).
 
-Do not commit pod IPs, SSH keys, or pod IDs to the repository. Use RunPod's SSH key management in the dashboard.
+## Ephemeral storage warning
+
+Container disk and models are lost on pod restart unless a Network Volume is attached and `OLLAMA_MODELS` is exported. Re-run bootstrap after any restart.
+
+## CI vs RunPod
+
+| Environment | Tier | Backend |
+|---|---|---|
+| GitHub Actions | Tier A | `fallback` (no Ollama) |
+| RunPod | Tier B | `ollama` (required for v0.1.0) |
 
 ## Troubleshooting
 
@@ -74,9 +113,15 @@ Do not commit pod IPs, SSH keys, or pod IDs to the repository. Use RunPod's SSH 
 
 ```bash
 curl http://localhost:11434/api/tags
+pkill ollama || true
 nohup ollama serve >/tmp/ollama.log 2>&1 &
+sleep 5
 ```
 
 **Smoke test fails with fallback answer:**
 
-Ensure the model is pulled: `ollama list` and re-run with `--backend ollama --model-name <listed-model>`.
+Ensure the model is pulled (`ollama list`) and `--model-name` matches exactly.
+
+**Disk full:**
+
+Use `llama3.2:3b`, attach Network Volume, or run `pip cache purge`.
