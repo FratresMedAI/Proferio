@@ -1,6 +1,8 @@
 # Sensor Narrative Report Template (SYNTHETIC)
 
-> **SYNTHETIC TRAINING DOCUMENT** — Fictional sensor reporting format.
+> **SYNTHETIC — FOR EVALUATION ONLY**
+
+Fictional sensor reporting format for Proferio eval workflows only.
 
 ## Track summary
 

@@ -1,6 +1,8 @@
 # Mission Knowledge Base Glossary (SYNTHETIC)
 
-> **SYNTHETIC TRAINING DOCUMENT** — Defined terms for grounded retrieval evals.
+> **SYNTHETIC — FOR EVALUATION ONLY**
+
+Defined terms for grounded retrieval evals. Not operational reference material.
 
 ## Terms
 

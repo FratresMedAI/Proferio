@@ -1,6 +1,8 @@
 # Counter-UAS Standard Operating Procedure (SYNTHETIC)
 
-> **SYNTHETIC TRAINING DOCUMENT** — Not operational guidance.
+> **SYNTHETIC — FOR EVALUATION ONLY**
+
+Not operational guidance. Fictional training content for Proferio eval workflows only.
 
 ## Engagement escalation ladder
 
