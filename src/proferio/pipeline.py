@@ -3,6 +3,7 @@ from .loaders import load_text_documents, chunk_documents
 from .embeddings import EmbeddingProvider
 from .vectorstore import InMemoryVectorStore
 from .retrieval import (
+    STOPWORDS,
     bm25_search,
     build_bm25_index,
     fuse_scores,
@@ -10,10 +11,16 @@ from .retrieval import (
     simple_rerank,
 )
 from .llm import LocalLLM, build_cited_answer
+from .audit import append_audit_log
+import time
 
 
 def _tokenize(text: str) -> set[str]:
-    return {t.strip(".,:;!?()[]{}\"'").lower() for t in text.split() if len(t) > 2}
+    return {
+        t.strip(".,:;!?()[]{}\"'").lower()
+        for t in text.split()
+        if len(t.strip(".,:;!?()[]{}\"'")) > 2 and t.strip(".,:;!?()[]{}\"'").lower() not in STOPWORDS
+    }
 
 
 def _is_out_of_scope(question: str, chunks: list[dict], min_overlap: int = 2) -> bool:
@@ -58,12 +65,25 @@ def build_basic_rag_pipeline(data_dir: str, cfg: AppConfig):
     llm = LocalLLM(cfg.backend, cfg.model_name)
 
     def ask(question: str, metadata_filter: dict | None = None):
+        started = time.perf_counter()
+
+        def _finish(payload: dict) -> dict:
+            if cfg.enable_audit_log:
+                append_audit_log(
+                    cfg.audit_log_path,
+                    question=question,
+                    status=payload.get("status", "unknown"),
+                    contexts=payload.get("contexts", []),
+                    latency_ms=(time.perf_counter() - started) * 1000,
+                )
+            return payload
+
         if not chunks:
-            return {
+            return _finish({
                 "answer": "Insufficient evidence: no documents were loaded. Add .txt/.md files to sample_data/docs.",
                 "contexts": [],
                 "status": "no_documents",
-            }
+            })
         token_oos = _is_out_of_scope(question, chunks, min_overlap=cfg.oos_min_overlap)
         queries = multi_query_expand(question)
         vector_hits = []
@@ -91,22 +111,28 @@ def build_basic_rag_pipeline(data_dir: str, cfg: AppConfig):
         unique = {h["id"]: h for h in fused}.values()
         reranked = simple_rerank(question, list(unique), top_n=cfg.top_k)
         if not reranked:
-            return {
+            return _finish({
                 "answer": "Insufficient evidence from retrieval results.",
                 "contexts": [],
                 "status": "no_retrieval_hits",
-            }
+            })
 
         best_score = float(reranked[0].get("fused_score", reranked[0].get("score", 0.0)))
         top_rel = _top_context_relevance(question, reranked)
-        if token_oos and (best_score < cfg.oos_score_threshold or top_rel < 0.2):
-            return {
+        if token_oos:
+            return _finish({
                 "answer": "Out-of-scope for current knowledge base. Ask about loaded documents or add relevant files.",
                 "contexts": [],
                 "status": "out_of_scope",
-            }
+            })
+        if best_score < cfg.oos_score_threshold and top_rel < 0.2:
+            return _finish({
+                "answer": "Out-of-scope for current knowledge base. Ask about loaded documents or add relevant files.",
+                "contexts": [],
+                "status": "out_of_scope",
+            })
 
         answer = build_cited_answer(question, reranked, llm)
-        return {"answer": answer, "contexts": reranked, "status": "grounded"}
+        return _finish({"answer": answer, "contexts": reranked, "status": "grounded"})
 
     return ask

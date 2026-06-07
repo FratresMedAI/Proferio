@@ -24,6 +24,12 @@ class LocalLLM:
                 self._hf_pipe = None
 
     def generate(self, prompt: str) -> str:
+        if self.backend == "fallback":
+            return (
+                f"[Fallback {self.backend}:{self.model_name}]\n"
+                f"Insufficient local runtime. Echo prompt:\n{prompt[:900]}"
+            )
+
         if self.backend == "ollama" and requests is not None:
             try:
                 resp = requests.post(

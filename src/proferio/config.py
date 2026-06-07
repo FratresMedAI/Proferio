@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 
 
 class AppConfig(BaseModel):
-    backend: str = Field(default="ollama", description="ollama | llamacpp | hf")
+    backend: str = Field(default="ollama", description="ollama | hf | fallback")
     model_name: str = Field(default="llama3.1:8b")
     embedding_model: str = Field(default="sentence-transformers/all-MiniLM-L6-v2")
     vector_db: str = Field(default="faiss", description="faiss | chroma")
@@ -14,7 +14,9 @@ class AppConfig(BaseModel):
     use_hybrid_retrieval: bool = True
     vector_weight: float = 0.65
     bm25_weight: float = 0.35
-    oos_min_overlap: int = 2
+    oos_min_overlap: int = 1
     oos_score_threshold: float = 0.22
     index_path: str = "artifacts/index"
     persist_index: bool = True
+    enable_audit_log: bool = False
+    audit_log_path: str = "artifacts/audit.jsonl"

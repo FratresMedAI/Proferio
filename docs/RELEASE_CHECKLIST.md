@@ -2,28 +2,30 @@
 
 ## Core Quality
 
-- [ ] `python scripts/smoke_test.py` passes
-- [ ] `python scripts/run_benchmarks.py` runs and outputs table
-- [ ] Out-of-scope query returns `status: out_of_scope`
-- [ ] In-domain query returns `status: grounded`
+- [x] `python scripts/smoke_test.py --backend fallback --no-persist-index` passes (Tier A)
+- [x] `python scripts/run_benchmarks.py --backend fallback --no-persist-index` runs and outputs table
+- [x] Out-of-scope query returns `status: out_of_scope`
+- [x] In-domain query returns `status: grounded`
+- [ ] `python scripts/smoke_test.py --backend ollama` passes on RunPod (Tier B)
 
 ## Demo Readiness
 
-- [ ] `python scripts/launch_gradio.py` launches at `http://localhost:7860`
-- [ ] UI shows `Answer`, `Retrieved Sources`, and `Status`
-- [ ] At least 3 example prompts execute cleanly
+- [ ] `python scripts/launch_gradio.py --backend ollama` launches at `http://localhost:7860` on RunPod
+- [x] UI shows `Answer`, `Retrieved Sources`, and `Status`
+- [ ] At least 3 example prompts execute cleanly with Ollama on RunPod
 
 ## Documentation
 
-- [ ] README includes quick start and benchmark command
-- [ ] `docs/ARCHITECTURE.md` reflects current modules/status semantics
-- [ ] Add 1 screenshot or GIF to README before public launch
+- [x] README includes quick start and benchmark command
+- [x] `docs/ARCHITECTURE.md` reflects current modules/status semantics
+- [x] Banner image in README
+- [x] `docs/ACCEPTANCE.md` and `docs/RUNPOD.md` added
 
 ## GitHub Polish
 
-- [ ] CI workflow passes on default branch
-- [ ] License and contributing docs present
-- [ ] Issue templates + PR template present
+- [x] CI workflow passes on default branch (Tier A)
+- [x] License and contributing docs present
+- [x] Issue templates + PR template present
 
 ## Launch Pack
 

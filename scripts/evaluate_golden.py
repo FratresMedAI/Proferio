@@ -1,22 +1,33 @@
+import argparse
 import json
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.append(str(ROOT / "src"))
+sys.path.insert(0, str(ROOT / "src"))
+sys.path.insert(0, str(ROOT / "scripts"))
 
-from proferio.config import AppConfig
+from _cli import add_runtime_args, config_from_args
 from proferio.pipeline import build_basic_rag_pipeline
 from proferio.evals import evaluate_single
 
 
-def main():
-    dataset_path = ROOT / "sample_data" / "golden_eval.json"
-    with open(dataset_path, "r", encoding="utf-8") as f:
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Run Proferio golden evaluation set")
+    add_runtime_args(parser)
+    parser.add_argument(
+        "--min-status-accuracy",
+        type=float,
+        default=0.66,
+        help="Minimum fraction of expected statuses that must match",
+    )
+    args = parser.parse_args()
+
+    with open(args.eval_set, "r", encoding="utf-8") as f:
         dataset = json.load(f)
 
-    cfg = AppConfig(backend="ollama", model_name="llama3.1:8b")
-    ask = build_basic_rag_pipeline(str(ROOT / "sample_data" / "docs"), cfg)
+    cfg = config_from_args(args)
+    ask = build_basic_rag_pipeline(str(args.corpus), cfg)
 
     rows = []
     status_correct = 0
@@ -62,6 +73,16 @@ def main():
 
     print(f"\nStatus accuracy: {status_accuracy:.2%} ({status_correct}/{total})")
 
+    if status_accuracy < args.min_status_accuracy:
+        print(
+            f"FAIL: status accuracy {status_accuracy:.2%} below threshold {args.min_status_accuracy:.2%}",
+            file=sys.stderr,
+        )
+        return 1
+
+    print("PASS: golden eval")
+    return 0
+
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
